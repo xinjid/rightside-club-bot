@@ -14,6 +14,7 @@
   "build": {
     "appId": "gg.rightside.clubbot",
     "productName": "RightSide Club Bot",
+    "publish": "never",
     "win": {
       "target": "nsis"
     },
