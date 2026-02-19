@@ -1,14 +1,26 @@
 {
-  "name": "smartshell-tg-bot",
+  "name": "rightside-club-bot",
   "version": "1.0.0",
-  "type": "module",
-  "main": "index.js",
+  "private": true,
+  "main": "main.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "electron .",
+    "dist:win": "electron-builder --win nsis"
   },
-  "dependencies": {
-    "axios": "^1.13.5",
-    "dotenv": "^16.4.5",
-    "telegraf": "^4.16.3"
+  "devDependencies": {
+    "electron": "^32.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "gg.rightside.clubbot",
+    "productName": "RightSide Club Bot",
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true
+    }
   }
 }
