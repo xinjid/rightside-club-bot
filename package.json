@@ -4,9 +4,9 @@
   "private": true,
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
-    "dist:win": "electron-builder --win nsis"
-  },
+  "start": "electron .",
+  "dist:win": "electron-builder --win nsis --publish never"
+},
   "devDependencies": {
     "electron": "^32.0.0",
     "electron-builder": "^24.13.3"
@@ -14,7 +14,6 @@
   "build": {
     "appId": "gg.rightside.clubbot",
     "productName": "RightSide Club Bot",
-    "publish": "never",
     "win": {
       "target": "nsis"
     },
