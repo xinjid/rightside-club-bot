@@ -1,20 +1,14 @@
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer } = require("electron");
 
-// Безопасный API для renderer (index.html)
-// Добавляй сюда методы, которые реально используешь в UI.
-contextBridge.exposeInMainWorld('api', {
-  // Settings
-  getSettings: () => ipcRenderer.invoke('settings:get'),
-  saveSettings: (payload) => ipcRenderer.invoke('settings:save', payload),
-
-  // Bot control
-  botStart: () => ipcRenderer.invoke('bot:start'),
-  botStop: () => ipcRenderer.invoke('bot:stop'),
-  botStatus: () => ipcRenderer.invoke('bot:status'),
-
-  // Bot console (run commands)
-  runCommand: (payload) => ipcRenderer.invoke('botConsole:runCommand', payload),
-
-  // Events
-  onBotConsoleMessage: (cb) => ipcRenderer.on('botConsole:message', (_, msg) => cb(msg)),
+contextBridge.exposeInMainWorld("api", {
+  getSettings: () => ipcRenderer.invoke("getSettings"),
+  saveSettings: (settings) => ipcRenderer.invoke("saveSettings", settings),
+  testSmartShell: (settings) => ipcRenderer.invoke("testSmartShell", settings),
+  testBot: (settings) => ipcRenderer.invoke("testBot", settings),
+  botStart: (settings) => ipcRenderer.invoke("botStart", settings),
+  botStop: () => ipcRenderer.invoke("botStop"),
+  getBotStatus: () => ipcRenderer.invoke("getBotStatus"),
+  getLogs: () => ipcRenderer.invoke("getLogs"),
+  clearLogs: () => ipcRenderer.invoke("clearLogs"),
+  copyToClipboard: (text) => ipcRenderer.invoke("copyToClipboard", text),
 });
