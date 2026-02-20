@@ -5,19 +5,409 @@
     <title>RightSide Admin Bot</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
-      body { font-family: Arial, sans-serif; margin: 24px; }
-      .card { max-width: 640px; padding: 16px; border: 1px solid #ddd; border-radius: 12px; }
-      .muted { color: #666; }
-      code { background: #f3f3f3; padding: 2px 6px; border-radius: 6px; }
+      :root {
+        --bg: #f3f5f7;
+        --surface: #ffffff;
+        --border: #d0d5dd;
+        --text: #101828;
+        --muted: #667085;
+        --primary: #0f766e;
+        --danger: #b42318;
+        --ok: #067647;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 18px;
+        background: radial-gradient(circle at top left, #e8fbf8, #f3f5f7 35%);
+        color: var(--text);
+        font-family: "Segoe UI", Tahoma, sans-serif;
+      }
+
+      .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+      }
+
+      .title {
+        font-size: 24px;
+        font-weight: 600;
+      }
+
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .conn-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .conn-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #d92d20;
+        box-shadow: 0 0 0 rgba(217, 45, 32, 0.5);
+      }
+
+      .conn-dot.ok {
+        background: #12b76a;
+        box-shadow: 0 0 8px rgba(18, 183, 106, 0.6);
+      }
+
+      .gear-btn {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: #fff;
+        color: #344054;
+        font-size: 18px;
+        width: 36px;
+        height: 36px;
+        cursor: pointer;
+      }
+
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 14px;
+        box-shadow: 0 8px 20px rgba(16, 24, 40, 0.05);
+      }
+
+      .card h2 {
+        margin: 0 0 10px;
+        font-size: 18px;
+      }
+
+      .actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      button {
+        border: 0;
+        border-radius: 8px;
+        background: var(--primary);
+        color: #fff;
+        padding: 10px 13px;
+        font-size: 14px;
+        cursor: pointer;
+      }
+
+      button.secondary {
+        background: #344054;
+      }
+
+      button.ghost {
+        background: #d0d5dd;
+        color: #101828;
+      }
+
+      button.danger {
+        background: var(--danger);
+      }
+
+      .status-line {
+        margin-top: 8px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .ok {
+        color: var(--ok);
+      }
+
+      .error {
+        color: var(--danger);
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      .panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 12px;
+      }
+
+      .slim-line {
+        margin-top: 6px;
+        padding: 8px 10px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 12px;
+        color: #475467;
+        background: #fcfcfd;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      .console-feed {
+        margin-top: 8px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 8px;
+        min-height: 180px;
+        max-height: 320px;
+        overflow-y: auto;
+        background: #f8fafc;
+      }
+
+      .console-item {
+        border: 1px solid #e4e7ec;
+        border-left: 4px solid #667085;
+        border-radius: 8px;
+        background: #fff;
+        padding: 8px;
+        margin-bottom: 8px;
+        font-size: 12px;
+        white-space: pre-wrap;
+      }
+
+      .console-item.user {
+        border-left-color: #2563eb;
+      }
+
+      .console-item.bot {
+        border-left-color: #0f766e;
+      }
+
+      .console-meta {
+        color: #667085;
+        font-size: 11px;
+        margin-bottom: 4px;
+      }
+
+      .cmd-row {
+        margin-top: 10px;
+        display: grid;
+        grid-template-columns: 1.1fr 1.2fr 0.8fr 0.9fr auto;
+        gap: 8px;
+      }
+
+      input,
+      select,
+      textarea {
+        width: 100%;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 9px 10px;
+        font-size: 14px;
+      }
+
+      textarea {
+        min-height: 86px;
+        resize: vertical;
+        font-family: Consolas, "Courier New", monospace;
+        font-size: 12px;
+      }
+
+      .modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(16, 24, 40, 0.45);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+
+      .modal-card {
+        width: min(720px, 95vw);
+        max-height: 90vh;
+        overflow: auto;
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        padding: 14px;
+      }
+
+      .modal-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+
+      .field {
+        margin-bottom: 10px;
+      }
+
+      .field label {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      details {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 8px;
+        margin-bottom: 10px;
+      }
+
+      details > summary {
+        cursor: pointer;
+        font-size: 13px;
+        color: #344054;
+      }
     </style>
   </head>
   <body>
-    <h2>RightSide Admin Bot</h2>
-    <div class="card">
-      <div><b>Статус:</b> Окно запущено ✅</div>
-      <div class="muted" style="margin-top:10px;">
-        Следующий шаг: мастер настройки и запуск Telegram-бота из приложения.
+    <header class="header">
+      <div class="title">RightSide Admin Bot</div>
+      <div class="header-right">
+        <div class="conn-status" id="connStatusWrap" title="">
+          <span id="connDot" class="conn-dot"></span>
+          <span>подключение</span>
+        </div>
+        <button id="openSettingsBtn" class="gear-btn" title="Настройки">⚙</button>
+      </div>
+    </header>
+
+    <section class="card">
+      <h2>Telegram Bot</h2>
+      <div class="actions">
+        <button id="startBotBtn">Запустить бота</button>
+        <button id="stopBotBtn" class="danger">Остановить бота</button>
+        <button id="inviteBtn" class="secondary">Пригласить</button>
+      </div>
+      <div id="botStatus" class="status-line">Status: STOPPED</div>
+
+      <div class="cmd-row">
+        <select id="cmdSelect">
+          <option value="ping">/ping</option>
+          <option value="who">/who</option>
+          <option value="discount">/discount</option>
+          <option value="discount_list">/discount_list</option>
+          <option value="discount_cancel">/discount_cancel</option>
+        </select>
+        <input id="cmdTarget" placeholder="target: phone/nickname/uuid" />
+        <input id="cmdValue" placeholder="value %" />
+        <input id="cmdDuration" placeholder="duration (7d)" />
+        <button id="runCommandBtn">Выполнить</button>
+      </div>
+
+      <div class="panel-header">
+        <strong>Bot console</strong>
+        <div>
+          <button id="toggleConsoleBtn" class="ghost">Показать логи</button>
+          <button id="clearConsoleBtn" class="ghost">Очистить</button>
+          <button id="copyConsoleBtn" class="ghost">Копировать</button>
+        </div>
+      </div>
+      <div id="consoleCollapsedLine" class="slim-line">Логи скрыты</div>
+      <div id="consoleFeed" class="console-feed hidden"></div>
+    </section>
+
+    <section class="card" style="margin-top: 12px;">
+      <div class="panel-header">
+        <strong>App logs</strong>
+        <div>
+          <button id="toggleLogsBtn" class="ghost">Показать логи</button>
+          <button id="clearLogsBtn" class="ghost">Очистить</button>
+          <button id="copyLogsBtn" class="ghost">Копировать</button>
+        </div>
+      </div>
+      <div id="logsCollapsedLine" class="slim-line">Логи скрыты</div>
+      <textarea id="logsArea" class="hidden" readonly></textarea>
+      <div id="logsMeta" class="status-line muted"></div>
+    </section>
+
+    <div id="settingsModal" class="modal hidden">
+      <div class="modal-card">
+        <div class="modal-head">
+          <strong>Настройки</strong>
+          <button id="closeSettingsBtn" class="ghost">Закрыть</button>
+        </div>
+
+        <div class="field">
+          <label for="telegramTokenInput">Telegram Bot Token *</label>
+          <input id="telegramTokenInput" type="password" placeholder="123456:ABC..." />
+        </div>
+        <div class="field">
+          <label for="smartshellLoginInput">SmartShell login *</label>
+          <input id="smartshellLoginInput" type="text" placeholder="+79..." />
+        </div>
+        <div class="field">
+          <label for="smartshellPasswordInput">SmartShell password *</label>
+          <input id="smartshellPasswordInput" type="password" />
+        </div>
+
+        <details>
+          <summary>Дополнительные настройки</summary>
+          <div class="field" style="margin-top: 8px;">
+            <label for="authModeSelect">Режим авторизации SmartShell</label>
+            <select id="authModeSelect">
+              <option value="credentials">login/password (основной)</option>
+              <option value="bearer">ручной bearer (fallback)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="bearerTokenInput">Bearer token (fallback)</label>
+            <input id="bearerTokenInput" type="password" placeholder="eyJ..." />
+          </div>
+          <div class="field">
+            <label>
+              <input id="logsCollapsedCheckbox" type="checkbox" checked />
+              Скрывать App logs при запуске
+            </label>
+          </div>
+          <div class="status-line muted">
+            Endpoint фиксирован: <code>https://billing.smartshell.gg/api/graphql</code><br />
+            company_id фиксирован: <code>2128</code>
+          </div>
+        </details>
+
+        <div class="actions">
+          <button id="saveSettingsBtn">Сохранить</button>
+          <button id="testSmartShellBtn" class="secondary">Test SmartShell</button>
+          <button id="testBotBtn" class="secondary">Test Bot</button>
+        </div>
+        <div id="settingsResult" class="status-line muted"></div>
       </div>
     </div>
+
+    <div id="inviteModal" class="modal hidden">
+      <div class="modal-card" style="width:min(520px,95vw);">
+        <div class="modal-head">
+          <strong>Приглашение</strong>
+          <button id="closeInviteBtn" class="ghost">Закрыть</button>
+        </div>
+        <div class="field">
+          <label for="inviteRoleSelect">Роль</label>
+          <select id="inviteRoleSelect">
+            <option value="moderator">Модератор</option>
+            <option value="admin">Админ</option>
+          </select>
+        </div>
+        <div class="actions">
+          <button id="createInviteBtn">Сгенерировать ссылку</button>
+          <button id="copyInviteBtn" class="ghost">Copy</button>
+        </div>
+        <textarea id="inviteLinkArea" readonly placeholder="Ссылка появится после генерации"></textarea>
+        <div id="inviteResult" class="status-line muted"></div>
+      </div>
+    </div>
+
+    <script src="./src/renderer.js"></script>
   </body>
 </html>

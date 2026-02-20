@@ -28,7 +28,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: RightSide-Club-Bot-Setup
+          name: RightSide-Admin-Bot-Setup
           path: |
             dist/*.exe
             dist/*.blockmap
