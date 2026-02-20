@@ -24,6 +24,10 @@ class DiscountScheduler {
     if (this.intervalId) {
       return;
     }
+    this.tick().catch((error) => {
+      const message = shortError(error);
+      this.logger.error(`Discount scheduler initial tick failed: ${message}`);
+    });
     this.intervalId = setInterval(() => {
       this.tick().catch((error) => {
         const message = shortError(error);
@@ -75,8 +79,32 @@ class DiscountScheduler {
     });
   }
 
-  listJobs(limit = 15) {
-    return this.db.listDiscountJobs(limit);
+  createActiveJob(payload) {
+    const now = new Date().toISOString();
+    return this.db.createDiscountJob({
+      clientUuid: payload.clientUuid,
+      clientPhone: payload.clientPhone || null,
+      clientNickname: payload.clientNickname || null,
+      discountValue: toInt(payload.discountValue),
+      previousDiscountValue:
+        payload.previousDiscountValue != null ? toInt(payload.previousDiscountValue) : null,
+      startsAt: now,
+      endsAt: payload.endsAt,
+      status: "active",
+      createdByTelegramUserId: payload.createdByTelegramUserId || "local",
+    });
+  }
+
+  listJobs({ limit = 20, createdByTelegramUserId = null, statuses = ["scheduled", "active"] } = {}) {
+    return this.db.listOpenDiscountJobs({
+      limit,
+      createdByTelegramUserId,
+      statuses,
+    });
+  }
+
+  markClientJobsFinished(clientUuid, status = "finished") {
+    return this.db.markClientJobsFinished(clientUuid, status);
   }
 
   async cancelJob(jobId) {

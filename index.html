@@ -170,6 +170,21 @@
         background: #f8fafc;
       }
 
+      .bot-layout {
+        margin-top: 10px;
+        display: grid;
+        grid-template-columns: 1.65fr 1fr;
+        gap: 10px;
+        align-items: start;
+      }
+
+      .panel-box {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 10px;
+        background: #fcfcfd;
+      }
+
       .console-item {
         border: 1px solid #e4e7ec;
         border-left: 4px solid #667085;
@@ -193,6 +208,34 @@
         color: #667085;
         font-size: 11px;
         margin-bottom: 4px;
+      }
+
+      .discount-list {
+        margin-top: 8px;
+        max-height: 320px;
+        overflow-y: auto;
+      }
+
+      .discount-item {
+        border: 1px solid #e4e7ec;
+        border-radius: 8px;
+        background: #fff;
+        padding: 8px;
+        margin-bottom: 8px;
+        font-size: 12px;
+      }
+
+      .discount-actions {
+        margin-top: 6px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .discount-meta {
+        color: #667085;
+        font-size: 11px;
       }
 
       .cmd-row {
@@ -269,6 +312,12 @@
         font-size: 13px;
         color: #344054;
       }
+
+      @media (max-width: 1000px) {
+        .bot-layout {
+          grid-template-columns: 1fr;
+        }
+      }
     </style>
   </head>
   <body>
@@ -296,7 +345,8 @@
         <select id="cmdSelect">
           <option value="ping">/ping</option>
           <option value="who">/who</option>
-          <option value="discount">/discount</option>
+          <option value="discount_set">/discount_set</option>
+          <option value="discount_remove">/discount_remove</option>
           <option value="discount_list">/discount_list</option>
           <option value="discount_cancel">/discount_cancel</option>
         </select>
@@ -306,16 +356,30 @@
         <button id="runCommandBtn">Выполнить</button>
       </div>
 
-      <div class="panel-header">
-        <strong>Bot console</strong>
-        <div>
-          <button id="toggleConsoleBtn" class="ghost">Показать логи</button>
-          <button id="clearConsoleBtn" class="ghost">Очистить</button>
-          <button id="copyConsoleBtn" class="ghost">Копировать</button>
+      <div class="bot-layout">
+        <div class="panel-box">
+          <div class="panel-header" style="margin-top: 0;">
+            <strong>Bot console</strong>
+            <div>
+              <button id="toggleConsoleBtn" class="ghost">Показать логи</button>
+              <button id="clearConsoleBtn" class="ghost">Очистить</button>
+              <button id="copyConsoleBtn" class="ghost">Копировать</button>
+            </div>
+          </div>
+          <div id="consoleCollapsedLine" class="slim-line">Логи скрыты</div>
+          <div id="consoleFeed" class="console-feed hidden"></div>
+        </div>
+
+        <div class="panel-box">
+          <div class="panel-header" style="margin-top: 0;">
+            <strong>Активные скидки</strong>
+            <button id="refreshDiscountJobsBtn" class="ghost">Обновить</button>
+          </div>
+          <div id="discountJobsEmpty" class="slim-line">Подключите SmartShell для отображения</div>
+          <div id="discountJobsList" class="discount-list hidden"></div>
+          <div id="discountJobsMeta" class="status-line muted"></div>
         </div>
       </div>
-      <div id="consoleCollapsedLine" class="slim-line">Логи скрыты</div>
-      <div id="consoleFeed" class="console-feed hidden"></div>
     </section>
 
     <section class="card" style="margin-top: 12px;">

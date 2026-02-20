@@ -250,6 +250,32 @@ class AppDatabase {
     );
   }
 
+  listOpenDiscountJobs({ limit = 20, createdByTelegramUserId = null, statuses = ["scheduled", "active"] } = {}) {
+    const normalizedStatuses = Array.isArray(statuses) && statuses.length
+      ? statuses
+      : ["scheduled", "active"];
+    const statusPlaceholders = normalizedStatuses.map(() => "?").join(", ");
+    const params = [...normalizedStatuses];
+
+    let sql = `
+      SELECT * FROM discount_jobs
+      WHERE status IN (${statusPlaceholders})
+    `;
+
+    if (createdByTelegramUserId) {
+      sql += " AND created_by_telegram_user_id = ? ";
+      params.push(String(createdByTelegramUserId));
+    }
+
+    sql += `
+      ORDER BY datetime(ends_at) ASC, datetime(created_at) DESC
+      LIMIT ?
+    `;
+    params.push(Number(limit));
+
+    return this.#all(sql, params);
+  }
+
   getDueScheduledJobs(nowIso) {
     return this.#all(
       `
@@ -269,6 +295,28 @@ class AppDatabase {
       ORDER BY datetime(ends_at) ASC
       `,
       [nowIso]
+    );
+  }
+
+  markClientJobsFinished(clientUuid, status = "finished") {
+    const now = new Date().toISOString();
+    this.#run(
+      `
+      UPDATE discount_jobs
+      SET status = ?, updated_at = ?, last_error = NULL
+      WHERE client_uuid = ?
+        AND status IN ('scheduled', 'active')
+      `,
+      [status, now, String(clientUuid)],
+      true
+    );
+    return this.#all(
+      `
+      SELECT * FROM discount_jobs
+      WHERE client_uuid = ?
+      ORDER BY datetime(updated_at) DESC
+      `,
+      [String(clientUuid)]
     );
   }
 

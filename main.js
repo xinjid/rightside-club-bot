@@ -124,10 +124,13 @@ function formatUiCommandInput(command, args = {}) {
   if (normalized === "who") {
     return `/${normalized} ${String(args.phone || "").trim()}`.trim();
   }
-  if (normalized === "discount") {
-    return `/${normalized} ${String(args.target || "").trim()} ${String(args.value || "").trim()} ${String(
+  if (normalized === "discount_set" || normalized === "discount") {
+    return `/discount_set ${String(args.phone || args.target || "").trim()} ${String(args.value || args.valuePercent || "").trim()} ${String(
       args.duration || ""
     ).trim()}`.trim();
+  }
+  if (normalized === "discount_remove") {
+    return `/${normalized} ${String(args.phone || args.target || "").trim()}`.trim();
   }
   if (normalized === "discount_cancel") {
     return `/${normalized} ${String(args.jobId || "").trim()}`.trim();
@@ -327,6 +330,47 @@ function registerIpcHandlers() {
         text: `Bot -> UI: Ошибка выполнения команды: ${message}`,
       });
       return { ok: false, command, text: message };
+    }
+  });
+
+  ipcMain.handle("discountJobs:list", async (_event, payload) => {
+    const role = String(payload?.role || "owner").toLowerCase();
+    const userId = String(payload?.userId || "local-ui");
+    const limitRaw = Number(payload?.limit || 20);
+    const limit = Number.isNaN(limitRaw) ? 20 : Math.max(1, Math.min(50, limitRaw));
+    const createdBy = role === "admin" ? userId : null;
+
+    const jobs = scheduler.listJobs({
+      limit,
+      createdByTelegramUserId: createdBy,
+      statuses: ["active", "scheduled"],
+    });
+
+    return {
+      ok: true,
+      jobs,
+    };
+  });
+
+  ipcMain.handle("discountJobs:cancel", async (_event, payload) => {
+    const id = Number(payload?.id);
+    if (Number.isNaN(id)) {
+      return { ok: false, message: "Некорректный job id" };
+    }
+
+    try {
+      const result = await scheduler.cancelJob(id);
+      pushBotConsoleMessage({
+        role: "system",
+        channel: "scheduler",
+        initiator: "ui",
+        text: `Discount job canceled id=${result.id} status=${result.status}`,
+      });
+      return { ok: true, job: result };
+    } catch (error) {
+      const message = error?.message || String(error);
+      logger.error(`discountJobs:cancel failed: ${message}`);
+      return { ok: false, message };
     }
   });
 }

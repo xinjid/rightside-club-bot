@@ -198,7 +198,8 @@ class BotManager {
           "Команды:\n" +
           "/ping\n" +
           "/who <phone>\n" +
-          "/discount <phone|nickname|uuid> <value> <duration>\n" +
+          "/discount_set <phone> <value> <duration>\n" +
+          "/discount_remove <phone>\n" +
           "/discount_list\n" +
           "/discount_cancel <jobId>\n",
       });
@@ -237,9 +238,19 @@ class BotManager {
       await this.#executeCommand(ctx, "who", { phone: target });
     });
 
+    bot.command("discount_set", async (ctx) => {
+      const [target, value, duration] = this.#splitArgs(ctx.message?.text || "");
+      await this.#executeCommand(ctx, "discount_set", { phone: target, value, duration });
+    });
+
+    bot.command("discount_remove", async (ctx) => {
+      const [phone] = this.#splitArgs(ctx.message?.text || "");
+      await this.#executeCommand(ctx, "discount_remove", { phone });
+    });
+
     bot.command("discount", async (ctx) => {
       const [target, value, duration] = this.#splitArgs(ctx.message?.text || "");
-      await this.#executeCommand(ctx, "discount", { target, value, duration });
+      await this.#executeCommand(ctx, "discount_set", { phone: target, value, duration });
     });
 
     bot.command("discount_list", async (ctx) => {
